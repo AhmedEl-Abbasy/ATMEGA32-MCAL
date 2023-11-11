@@ -9,7 +9,6 @@
  *
  *******************************************************************************/
 
-
 /**********************************************************************************************************************
  *  INCLUDES
  *********************************************************************************************************************/
@@ -101,7 +100,6 @@ void dio_vidConfigChannel(dio_portId_t port, dio_channelId_t channel, dio_direct
 		break;
 	}
 }
-
 /******************************************************************************
 * \Syntax          : void dio_vidWriteChannel
 						(dio_portId_t port, dio_channelId_t channel, dio_level_t level)      
@@ -182,7 +180,6 @@ void dio_vidWriteChannelGroup(dio_portId_t port,u8 value,u8 mask)
 	
 	
 }
-
 /******************************************************************************
 * \Syntax          :void dio_vidFlipChannel
 						(dio_portId_t port, dio_channelId_t channel)
