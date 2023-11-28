@@ -15,84 +15,108 @@
  *******************************************************************************/
 #include "adc.h"
 
-/*******************************************************************************
- *                      Global Constant Macros                                 *
- *******************************************************************************/
 
 /*******************************************************************************
- *                      Global Function Macros                                 *
+ *                      Local Data                                             *
  *******************************************************************************/
+static void(*ADC_CALLBACKptr)(void) =NULL;
 
 /*******************************************************************************
- *                      Global Data Types and Structures                       *
+ *                      Global Data                                            *
  *******************************************************************************/
+
+
+ /*******************************************************************************
+ *                      ISR's Definitions                                      *
+ *******************************************************************************/
+
 
 /*******************************************************************************
- *                      Global Data Prototypes                                 *
+ *                      Private Functions Prototypes                           *
  *******************************************************************************/
+
 
 /*******************************************************************************
- *                      Global Function                              *
+ *                      Private Functions Definitions                          *
  *******************************************************************************/
+ 
 
+/*******************************************************************************
+ *                      Global Functions Definitions                           *
+ *******************************************************************************/
 
 void ADC_Initialize(void)
 {
 	/*******Selecting Voltage reference *******/
-	
 	ADMUX_Reg &= ADC_VOLAGE_REF_clr_msk;
-	ADMUX_Reg |= ADC_VOLAGE_REF_SELECTOR_msk;	
-	
+	ADMUX_Reg |= ADC_VOLAGE_REF_SELECTOR_msk;
 	/******************************************/
-	
 	/*********Selecting ADC Mode **************/
 	#if ADC_MODE_SELECTOR == ADC_MODE_AUTO_TRIGGER
-		SET_BIT(ADCSRA_Reg,5);
-		//ADCSRA_Reg |= (1 << 5);
+		SET_BIT(ADCSRA_Reg,ADATE_pin);
 		SFIOR_Reg &= ADC_AUTO_TEIG_SRC_clr_msk;
-		SFIOR_Reg |= ADC_AUTO_TRIG_SRCE_SELECTOR;	
+		SFIOR_Reg |= ADC_AUTO_TRIG_SRCE_SELECTOR;
 	#elif ADC_MODE_SELECTOR == ADC_MODE_SINGLE_CONVERSION
-		CLEAR_BIT(ADCSRA_Reg,5);
-		//ADCSRA_Reg &= ~(1 << 5);
+		CLEAR_BIT(ADCSRA_Reg,ADATE_pin);
 	#endif
-	
-	
 	/******************************************/
-	
 	/*********Selecting Adjusted  *************/
 	#if ADC_ADJUSTMENT_SELECTOR ==  ADC_RIGHT_ADJUSTED
-		CLEAR_BIT(ADMUX_Reg,5);
-		//ADMUX_Reg &=~(1 << 5);
+		CLEAR_BIT(ADMUX_Reg,ADLAR_pin);
 	#elif ADC_ADJUSTMENT_SELECTOR ==  ADC_LEFT_ADJUSTED
-		SET_BIT(ADMUX_Reg,5);
-		//ADMUX_Reg |= (1 << 5);
+		SET_BIT(ADMUX_Reg,ADLAR_pin);
 	#endif
 	/******************************************/
-	
 	/********* Clearing Interrupt Flag**************/
-		SET_BIT(ADCSRA_Reg,4);
-	//ADCSRA_Reg |= (1 << 4);
+		SET_BIT(ADCSRA_Reg,ADIF_pin);
 	/******************************************/
-	
 	/************** Enabling ADC ****************/
-		SET_BIT(ADCSRA_Reg,7);
-		//ADCSRA_Reg |= (1 << 7);
+		SET_BIT(ADCSRA_Reg,ADEN_pin);
 	/******************************************/
-	
-	
 }
 
-u16 ADC_StartConversion(ADC_Channel_types ADC_Channel)
+void ADC_StartConversion(ADC_Channel_types ADC_Channel)
 {
-	/***************** Select Channel *************************/
-	ADMUX_Reg &= 0b11100000;  		// ADC  Mask to clear channel */  /*ADC_CHANNEL_SELECTOR_clr_msk	 0b11100000*/
+	//dio_vidConfigChannel(DIO_PORTA, ADC_Channel, INPUT);
+	ADMUX_Reg &= ADC_CHANNEL_SELECTOR_clr_msk;  		
 	ADMUX_Reg |= ADC_Channel;
-	/******************************************/
-	/***************** Start Conversion *************************/
-	SET_BIT(ADCSRA_Reg,6);
-	/******************************************/
-	while(CHECK_BIT(ADCSRA_Reg,6));	//this bit clear by hardware
-	return ADCLH_Reg;
+
+	SET_BIT(ADCSRA_Reg,ADSC_pin);
+}
+
+u16 ADC_GetResult(void)
+{
+	SET_BIT(ADCSRA_Reg,ADSC_pin);//
+	#if ADC_MODE_SELECTOR == ADC_MODE_AUTO_TRIGGER
+		return ADCLH_Reg;
+	#elif ADC_MODE_SELECTOR == ADC_MODE_SINGLE_CONVERSION
+		while(CHECK_BIT(ADCSRA_Reg,ADIF_pin));	//this bit clear by hardware
+		return ADCLH_Reg;
+	#endif
+}
+
+void ADC_EnableInt(void)
+{
+	SET_BIT(ADCSRA_Reg,ADIE_pin);
+}
+
+void ADC_DisableInt(void)
+{
+	CLEAR_BIT(ADCSRA_Reg,ADIE_pin);
+}
+
+void ADC_SetCallback(void(*CopyFuncPtr)(void))
+{
+	ADC_CALLBACKptr = CopyFuncPtr;
+}
+
+void __vector_16(void) __attribute__((signal,used));
+void __vector_16(void)
+{
+	if(ADC_CALLBACKptr != NULL)
+	{
+		ADC_CALLBACKptr();
+	}
 }
 
 

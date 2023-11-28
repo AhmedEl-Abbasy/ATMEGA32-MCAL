@@ -51,7 +51,16 @@ typedef enum {
  *                      Global Function Prototypes                             *
  *******************************************************************************/
 void ADC_Initialize(void);
-u16 ADC_StartConversion(ADC_Channel_types ADC_Channel);
+
+void ADC_StartConversion(ADC_Channel_types ADC_Channel);
+
+u16 ADC_GetResult(void);
+
+void ADC_EnableInt(void);
+
+void ADC_DisableInt(void);
+
+void ADC_SetCallback(void(*CopyFuncPtr)(void));
 /*******************************************************************************
  *                      End of File: adc.h                                        *
  *******************************************************************************/

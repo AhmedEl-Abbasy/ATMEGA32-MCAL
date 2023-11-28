@@ -55,6 +55,11 @@
 #define ADC_AUTO_TEIG_SRC_TIMER1_OVF_msk	0b11000000
 #define ADC_AUTO_TEIG_SRC_TIMER1_CAPT_msk	0b11100000
 
+/** ADC  Mask to clear channel   **/
+#define ADC_CHANNEL_SELECTOR_clr_msk	 0b11100000
+
+
+
 /*******************************************************************************
  *                      Global Function Macros                                 *
  *******************************************************************************/

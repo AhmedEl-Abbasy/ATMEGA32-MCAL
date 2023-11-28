@@ -27,6 +27,14 @@
 #define ADCH_Reg		*((volatile u8*) 0x25)
 #define ADCLH_Reg		*((volatile u16*) 0x24)
 
+/**** ADMUX_Reg  ****/
+#define ADLAR_pin		5
+/**** ADCSRA_Reg ****/
+#define ADIE_pin		3
+#define ADIF_pin		4
+#define ADATE_pin		5
+#define ADSC_pin		6
+#define ADEN_pin		7
 
 /*******************************************************************************
  *                      Global Function Macros                                 *
